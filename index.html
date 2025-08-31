@@ -89,6 +89,30 @@
         .input-field.uppercase::placeholder {
             text-transform: none;
         }
+        /* Podium Styles */
+        .podium-stand {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            width: 32%;
+            padding: 1rem;
+            border-radius: 0.75rem 0.75rem 0 0;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+            color: #1f2937;
+        }
+        .podium-name {
+            font-weight: 700;
+            font-size: 1.125rem;
+            word-break: break-word;
+        }
+        .podium-score {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #4f46e5;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -275,12 +299,23 @@
 
         <!-- Scoreboard View -->
         <div id="scoreboard-view" class="view flex-col items-center justify-center h-full">
-            <div class="card text-center">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6">Final Scores</h2>
-                <div id="final-scores-list" class="space-y-3">
-                    <!-- Scores will be injected here -->
+            <div class="card text-center w-full max-w-lg">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8">Final Scores</h2>
+                
+                <div id="podium-container" class="flex items-end justify-center gap-2 md:gap-4 h-64 mb-8">
+                    <!-- 2nd Place -->
+                    <div id="podium-2" class="podium-stand" style="height: 75%; background-color: #d1d5db; order: 1;"></div>
+                    <!-- 1st Place -->
+                    <div id="podium-1" class="podium-stand" style="height: 100%; background-color: #fef08a; order: 2; border: 3px solid #facc15;"></div>
+                    <!-- 3rd Place -->
+                    <div id="podium-3" class="podium-stand" style="height: 60%; background-color: #fcd34d; order: 3;"></div>
                 </div>
-                <button id="play-again-btn" class="btn btn-primary w-full mt-8">Play Again (New Game)</button>
+
+                <div id="runners-up-list" class="space-y-2 text-left">
+                    <!-- Scores for 4th+ will be injected here -->
+                </div>
+
+                <button id="play-again-btn" class="btn btn-primary w-full mt-8 hidden">Play Again (New Game)</button>
             </div>
         </div>
 
@@ -839,34 +874,59 @@
         }
         
         function displayFinalScores(players) {
-            const scoresList = document.getElementById('final-scores-list');
-            scoresList.innerHTML = '';
-            
             const sortedPlayers = Object.values(players).sort((a, b) => b.score - a.score);
-            
-            sortedPlayers.forEach((player, index) => {
-                const scoreEl = document.createElement('div');
-                scoreEl.className = 'flex justify-between items-center p-4 rounded-lg';
-                let medal = '';
-                if(index === 0) {
-                     scoreEl.classList.add('bg-yellow-100', 'border-2', 'border-yellow-400');
-                     medal = '🥇';
-                } else if (index === 1) {
-                     scoreEl.classList.add('bg-gray-200');
-                      medal = '🥈';
-                } else if (index === 2) {
-                     scoreEl.classList.add('bg-yellow-50');
-                     medal = '🥉';
-                } else {
-                    scoreEl.classList.add('bg-gray-50');
-                }
 
-                scoreEl.innerHTML = `
-                    <span class="font-bold text-lg">${medal} ${player.name || player.id.substring(0,12)}</span>
-                    <span class="text-xl font-bold text-indigo-600">${player.score} points</span>
-                `;
-                scoresList.appendChild(scoreEl);
-            });
+            const podium1 = document.getElementById('podium-1');
+            const podium2 = document.getElementById('podium-2');
+            const podium3 = document.getElementById('podium-3');
+            const runnersUpList = document.getElementById('runners-up-list');
+
+            // Clear previous scores
+            podium1.innerHTML = '';
+            podium2.innerHTML = '';
+            podium3.innerHTML = '';
+            runnersUpList.innerHTML = '';
+
+            podium1.classList.add('hidden');
+            podium2.classList.add('hidden');
+            podium3.classList.add('hidden');
+
+            // 1st Place
+            if (sortedPlayers[0]) {
+                podium1.innerHTML = `<div class="text-4xl mb-2">🥇</div><div class="podium-name">${sortedPlayers[0].name}</div><div class="podium-score">${sortedPlayers[0].score} pts</div>`;
+                podium1.classList.remove('hidden');
+            }
+
+            // 2nd Place
+            if (sortedPlayers[1]) {
+                podium2.innerHTML = `<div class="text-3xl mb-2">🥈</div><div class="podium-name">${sortedPlayers[1].name}</div><div class="podium-score">${sortedPlayers[1].score} pts</div>`;
+                podium2.classList.remove('hidden');
+            }
+
+            // 3rd Place
+            if (sortedPlayers[2]) {
+                podium3.innerHTML = `<div class="text-3xl mb-2">🥉</div><div class="podium-name">${sortedPlayers[2].name}</div><div class="podium-score">${sortedPlayers[2].score} pts</div>`;
+                podium3.classList.remove('hidden');
+            }
+            
+            // Runners-up (4th place and beyond)
+            if (sortedPlayers.length > 3) {
+                const runnersUpTitle = document.createElement('h3');
+                runnersUpTitle.className = 'text-lg font-bold text-gray-700 mt-4 border-t pt-4';
+                runnersUpTitle.textContent = 'Leaderboard';
+                runnersUpList.appendChild(runnersUpTitle);
+
+                sortedPlayers.slice(3).forEach((player, index) => {
+                    const playerEl = document.createElement('div');
+                    playerEl.className = 'flex justify-between items-center p-2 rounded-lg bg-gray-50';
+                    playerEl.innerHTML = `
+                        <span class="font-semibold text-gray-800"><span class="inline-block w-6 text-center mr-2 text-gray-500">${index + 4}.</span> ${player.name}</span>
+                        <span class="font-bold text-indigo-600">${player.score} pts</span>
+                    `;
+                    runnersUpList.appendChild(playerEl);
+                });
+            }
+
 
             const playAgainBtn = document.getElementById('play-again-btn');
             if (currentGameData && userId === currentGameData.hostId) {
