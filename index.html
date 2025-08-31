@@ -203,15 +203,16 @@
         <!-- Lobby View -->
         <div id="lobby-view" class="view flex-col items-center justify-center h-full">
             <div class="card text-center">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Game Lobby</h2>
-                <p class="text-gray-600 mb-4">Share the link or scan the QR code to invite players!</p>
+                <h2 id="lobby-title" class="text-3xl font-bold text-gray-800 mb-2">Game Lobby</h2>
                 
-                <div class="flex items-center justify-center space-x-2 bg-gray-200 p-3 rounded-lg">
-                    <span id="game-id-display" class="font-mono text-lg text-gray-800"></span>
-                    <button id="copy-game-id-btn" class="btn btn-secondary btn-sm py-1 px-3">Copy Link</button>
+                <div id="invite-container">
+                    <p class="text-gray-600 mb-4">Share the link or scan the QR code to invite players!</p>
+                    <div class="flex items-center justify-center space-x-2 bg-gray-200 p-3 rounded-lg">
+                        <span id="game-id-display" class="font-mono text-lg text-gray-800"></span>
+                        <button id="copy-game-id-btn" class="btn btn-secondary btn-sm py-1 px-3">Copy Link</button>
+                    </div>
+                    <div id="qrcode" class="mx-auto my-4 w-40 h-40 border p-1 rounded-lg bg-white"></div>
                 </div>
-
-                <div id="qrcode" class="mx-auto my-4 w-40 h-40 border p-1 rounded-lg bg-white"></div>
 
                 <h3 class="font-semibold text-gray-700 mb-2">Host: <span id="host-name-display" class="font-normal"></span></h3>
 
@@ -329,7 +330,7 @@
                     <!-- Scores for 4th+ will be injected here -->
                 </div>
 
-                <button id="play-again-btn" class="btn btn-primary w-full mt-8 hidden">Play Again (New Game)</button>
+                <button id="play-again-btn" class="btn btn-primary w-full mt-8 hidden">End Game & Return to Menu</button>
             </div>
         </div>
 
@@ -338,7 +339,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, updateDoc, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
         // --- App State ---
         let db, auth;
         let userId;
@@ -444,7 +446,9 @@
             const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, gameId);
             gameUnsubscribe = onSnapshot(gameRef, (docSnap) => {
                 if (!docSnap.exists()) {
-                    alert("Game not found or has been deleted.");
+                    // This is triggered when the host deletes the game.
+                    // All players will reset to the initial view.
+                    alert("The game has ended.");
                     resetToInitialView();
                     return;
                 }
@@ -475,17 +479,25 @@
                 });
             }
 
-            // Show host controls
+            // Show host controls and invite info based on role
             const hostControls = document.getElementById('host-controls');
             const playerWaitMessage = document.getElementById('player-wait-message');
+            const inviteContainer = document.getElementById('invite-container');
+            const lobbyTitle = document.getElementById('lobby-title');
+
             if (userId === gameData.hostId) {
                 hostControls.classList.remove('hidden');
                 playerWaitMessage.textContent = 'You are the host. Start the game when everyone is ready.';
-                playerWaitMessage.classList.remove('hidden');
+                
+                inviteContainer.classList.remove('hidden');
+                lobbyTitle.textContent = 'Game Lobby';
+
             } else {
                 hostControls.classList.add('hidden');
-                playerWaitMessage.textContent = 'The host will start the game soon.';
-                playerWaitMessage.classList.remove('hidden');
+                playerWaitMessage.textContent = 'The host will start the game soon. You can see new players join in real-time.';
+                
+                inviteContainer.classList.add('hidden');
+                lobbyTitle.textContent = "You're In!";
             }
 
 
@@ -493,20 +505,22 @@
             switch (gameData.state) {
                 case 'lobby':
                     switchView('lobby');
-                    document.getElementById('game-id-display').textContent = gameData.id;
                     
-                    // Generate QR Code
-                    const qrCodeContainer = document.getElementById('qrcode');
-                    qrCodeContainer.innerHTML = ''; // Clear previous QR code
-                    const joinLink = `${window.location.href.split('?')[0]}?gameId=${gameData.id}`;
-                    new QRCode(qrCodeContainer, {
-                        text: joinLink,
-                        width: 160,
-                        height: 160,
-                        colorDark : "#000000",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
+                    // Generate QR Code only for the host
+                    if (userId === gameData.hostId) {
+                        document.getElementById('game-id-display').textContent = gameData.id;
+                        const qrCodeContainer = document.getElementById('qrcode');
+                        qrCodeContainer.innerHTML = ''; // Clear previous QR code
+                        const joinLink = `${window.location.href.split('?')[0]}?gameId=${gameData.id}`;
+                        new QRCode(qrCodeContainer, {
+                            text: joinLink,
+                            width: 160,
+                            height: 160,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.H
+                        });
+                    }
                     break;
                 case 'submitting':
                     switchView('questionSubmission');
@@ -746,7 +760,13 @@
             document.getElementById('question-form').reset();
         });
 
-        document.getElementById('play-again-btn').addEventListener('click', resetToInitialView);
+        document.getElementById('play-again-btn').addEventListener('click', async () => {
+            if (currentGameData && userId === currentGameData.hostId) {
+                const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
+                await deleteDoc(gameRef);
+                // The onSnapshot listener will catch the deletion and reset the view for everyone.
+            }
+        });
 
         document.getElementById('end-game-now-btn').addEventListener('click', async () => {
             if (currentGameData && userId === currentGameData.hostId) {
