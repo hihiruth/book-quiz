@@ -239,31 +239,53 @@
                         <span id="submission-timer">10:00</span>
                     </div>
                 </div>
-                <p id="submission-view-subtitle" class="text-gray-600 mb-6">Create a question with four options. Make sure to mark the correct one!</p>
-                <form id="question-form">
-                    <label class="font-semibold">Question:</label>
-                    <input type="text" id="question-text" class="input-field" required>
+                
+                <!-- This container will hold either the player form or the host's view -->
+                <div id="submission-content-container">
                     
-                    <label class="font-semibold">Options:</label>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <input type="text" id="option-a" placeholder="Option A" class="input-field m-0" required>
-                        <input type="text" id="option-b" placeholder="Option B" class="input-field m-0" required>
-                        <input type="text" id="option-c" placeholder="Option C" class="input-field m-0" required>
-                        <input type="text" id="option-d" placeholder="Option D" class="input-field m-0" required>
+                    <!-- Player's View: The Form -->
+                    <div id="player-submission-content">
+                        <p class="text-gray-600 mb-6">Create a question with four options. Make sure to mark the correct one!</p>
+                        <form id="question-form">
+                            <label class="font-semibold">Question:</label>
+                            <input type="text" id="question-text" class="input-field" required>
+                            
+                            <label class="font-semibold">Options:</label>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <input type="text" id="option-a" placeholder="Option A" class="input-field m-0" required>
+                                <input type="text" id="option-b" placeholder="Option B" class="input-field m-0" required>
+                                <input type="text" id="option-c" placeholder="Option C" class="input-field m-0" required>
+                                <input type="text" id="option-d" placeholder="Option D" class="input-field m-0" required>
+                            </div>
+
+                            <label class="font-semibold">Correct Answer:</label>
+                            <select id="correct-answer" class="input-field">
+                                <option value="A">Option A</option>
+                                <option value="B">Option B</option>
+                                <option value="C">Option C</option>
+                                <option value="D">Option D</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-primary w-full mt-2">Submit Question</button>
+                        </form>
+                        <div class="mt-4 text-center">
+                            <p class="text-gray-700">You have submitted <span id="questions-submitted-count" class="font-bold">0</span> questions.</p>
+                        </div>
                     </div>
 
-                    <label class="font-semibold">Correct Answer:</label>
-                    <select id="correct-answer" class="input-field">
-                        <option value="A">Option A</option>
-                        <option value="B">Option B</option>
-                        <option value="C">Option C</option>
-                        <option value="D">Option D</option>
-                    </select>
+                    <!-- Host's View: The Question List -->
+                    <div id="host-submission-content" class="hidden">
+                        <p class="text-gray-600 mb-6 text-center">Players are submitting questions. You can review them in real-time below.</p>
+                        <div class="text-center mb-4">
+                            <p class="text-lg">Total Questions Submitted:</p>
+                            <span id="total-questions-submitted" class="font-bold text-3xl text-indigo-600">0</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-gray-800 border-t pt-4">Submitted Questions:</h3>
+                        <div id="submitted-questions-list" class="mt-2 space-y-3 max-h-80 overflow-y-auto p-3 bg-gray-50 rounded-lg border">
+                            <!-- Questions will be dynamically inserted here -->
+                        </div>
+                    </div>
 
-                    <button type="submit" class="btn btn-primary w-full mt-2">Submit Question</button>
-                </form>
-                <div id="submission-view-info" class="mt-4 text-center">
-                    <p class="text-gray-700">You have submitted <span id="questions-submitted-count" class="font-bold">0</span> questions.</p>
                 </div>
             </div>
         </div>
@@ -435,7 +457,7 @@
                 });
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                alert("Could not connect to the game service. Please refresh the page.");
+                // A user-friendly error display could be added here
             }
         }
 
@@ -448,7 +470,6 @@
                 if (!docSnap.exists()) {
                     // This is triggered when the host deletes the game.
                     // All players will reset to the initial view.
-                    alert("The game has ended.");
                     resetToInitialView();
                     return;
                 }
@@ -527,22 +548,54 @@
                     startSubmissionTimer(gameData.submissionEndTime);
 
                     const subViewTitle = document.getElementById('submission-view-title');
-                    const subViewSubtitle = document.getElementById('submission-view-subtitle');
-                    const subViewForm = document.getElementById('question-form');
-                    const subViewInfo = document.getElementById('submission-view-info');
-                    
+                    const playerContent = document.getElementById('player-submission-content');
+                    const hostContent = document.getElementById('host-submission-content');
+
                     if (userId === gameData.hostId) {
-                        subViewTitle.textContent = 'Question Submission In Progress';
-                        subViewSubtitle.textContent = 'Players are submitting their questions. The quiz will begin when the timer ends.';
-                        subViewForm.classList.add('hidden');
-                        subViewInfo.innerHTML = `<p class="text-lg">Total Questions Submitted: <span class="font-bold text-2xl text-indigo-600">${gameData.questions.length}</span></p>`;
-                    } else {
-                        // For players
+                        subViewTitle.textContent = 'Question Submission';
+                        playerContent.classList.add('hidden');
+                        hostContent.classList.remove('hidden');
+
+                        document.getElementById('total-questions-submitted').textContent = gameData.questions.length;
+                        
+                        const submittedQuestionsList = document.getElementById('submitted-questions-list');
+                        submittedQuestionsList.innerHTML = ''; // Clear the list
+
+                        if (gameData.questions.length === 0) {
+                            submittedQuestionsList.innerHTML = '<p class="text-gray-500 text-center italic py-4">No questions have been submitted yet.</p>';
+                        } else {
+                            // Reverse to show newest first
+                            [...gameData.questions].reverse().forEach(q => { 
+                                const authorName = gameData.players[q.authorId]?.name || 'Unknown Player';
+
+                                const questionEl = document.createElement('div');
+                                questionEl.className = 'p-3 bg-white rounded-lg shadow-sm border';
+                                
+                                let optionsHTML = '<ul class="list-disc list-inside mt-2 text-sm text-gray-600 space-y-1">';
+                                // Ensure consistent order for options
+                                const sortedOptionKeys = Object.keys(q.options).sort();
+                                sortedOptionKeys.forEach(key => {
+                                     const isCorrect = key === q.correct;
+                                     optionsHTML += `<li class="${isCorrect ? 'font-bold text-green-600' : ''}">${key}: ${q.options[key]} ${isCorrect ? '✓' : ''}</li>`;
+                                });
+                                optionsHTML += '</ul>';
+
+                                questionEl.innerHTML = `
+                                    <p class="font-semibold text-gray-800">${q.text}</p>
+                                    <p class="text-xs text-gray-500 font-medium">Submitted by: <span class="font-bold">${authorName}</span></p>
+                                    ${optionsHTML}
+                                `;
+                                submittedQuestionsList.appendChild(questionEl);
+                            });
+                        }
+
+                    } else { // It's a player
                         subViewTitle.textContent = 'Submit Your Questions';
-                        subViewSubtitle.textContent = 'Create a question with four options. Make sure to mark the correct one!';
-                        subViewForm.classList.remove('hidden');
+                        playerContent.classList.remove('hidden');
+                        hostContent.classList.add('hidden');
+                        
                         const myQuestionsCount = gameData.questions.filter(q => q.authorId === userId).length;
-                        subViewInfo.innerHTML = `<p class="text-gray-700">You have submitted <span class="font-bold">${myQuestionsCount}</span> questions.</p>`;
+                        document.getElementById('questions-submitted-count').textContent = myQuestionsCount;
                     }
                     break;
                 case 'playing':
