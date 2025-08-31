@@ -817,7 +817,9 @@
             if (currentGameData && userId === currentGameData.hostId) {
                 const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
                 await deleteDoc(gameRef);
-                // The onSnapshot listener will catch the deletion and reset the view for everyone.
+                // The listener handles resetting for players. We'll call it directly for the host
+                // to ensure a smooth transition, just in case the listener is slow to update the host's own UI.
+                resetToInitialView();
             }
         });
 
