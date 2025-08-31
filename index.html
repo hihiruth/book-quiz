@@ -102,12 +102,10 @@
                 <h1 class="text-4xl font-bold text-gray-800 mb-2">Book Club Quiz Royale</h1>
                 <p class="text-gray-600 mb-8">Create a game for your book club or join an existing one.</p>
                 
-                <label for="player-name" class="font-semibold text-gray-700 text-left block">Your Name</label>
-                <input type="text" id="player-name" class="input-field" placeholder="Enter your name..." required>
-
                 <div class="space-y-4 mt-4">
                     <button id="host-game-btn" class="btn btn-primary w-full">Host New Game</button>
                     <button id="join-game-btn" class="btn btn-secondary w-full">Join Game</button>
+                    <button id="how-to-play-btn" class="btn btn-secondary w-full">How to Play</button>
                 </div>
                  <div class="mt-8 text-sm text-gray-500">
                     <p>Your User ID (for reference):</p>
@@ -116,10 +114,41 @@
             </div>
         </div>
         
+        <!-- How to Play View -->
+        <div id="how-to-play-view" class="view flex-col items-center justify-center h-full">
+            <div class="card">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">How to Play</h2>
+                <div class="space-y-4 text-gray-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-indigo-600">Phase 1: Question Submission</h3>
+                        <p>The host sets a timer. All players must create and submit quiz questions based on the book. You cannot answer your own questions later, so be creative!</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-indigo-600">Phase 2: The Quiz</h3>
+                        <p>Once the submission time is up, the quiz begins! You will be shown questions written by other players, one by one. Answer as many as you can before the main game timer runs out.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-indigo-600">Scoring System</h3>
+                        <ul class="list-disc list-inside space-y-1 mt-2">
+                            <li><span class="font-semibold text-green-600">+10 Points</span> for each question you submit.</li>
+                            <li><span class="font-semibold text-green-600">+10 Points</span> for each question you answer correctly.</li>
+                            <li>There is no penalty for wrong answers.</li>
+                        </ul>
+                    </div>
+                    <p class="font-semibold text-center pt-4">The player with the highest total score wins. Good luck!</p>
+                </div>
+                <button id="back-to-initial-btn-rules" class="btn btn-primary w-full mt-8">Got it!</button>
+            </div>
+        </div>
+
         <!-- Host Setup View -->
         <div id="host-setup-view" class="view flex-col items-center justify-center h-full">
             <div class="card">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Game Setup</h2>
+                
+                <label for="host-name-input" class="font-semibold text-gray-700">Your Name (as Host)</label>
+                <input type="text" id="host-name-input" class="input-field" placeholder="Enter your name..." required>
+
                 <label for="submission-time" class="font-semibold text-gray-700">Question Submission Time (minutes)</label>
                 <input type="number" id="submission-time" class="input-field" value="10" min="1">
                 
@@ -135,8 +164,13 @@
         <div id="player-join-view" class="view flex-col items-center justify-center h-full">
             <div class="card">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Join a Game</h2>
+                
+                <label for="join-player-name-input" class="font-semibold text-gray-700">Your Name</label>
+                <input type="text" id="join-player-name-input" class="input-field" placeholder="Enter your name..." required>
+
                 <label for="game-id-input" class="font-semibold text-gray-700">Enter Game ID</label>
                 <input type="text" id="game-id-input" class="input-field uppercase" placeholder="e.g. AB12C" maxlength="5">
+                
                 <button id="submit-join-game-btn" class="btn btn-primary w-full">Join</button>
                 <button id="back-to-initial-btn-join" class="btn btn-secondary w-full mt-2">Back</button>
             </div>
@@ -282,6 +316,7 @@
         // --- UI Elements ---
         const views = {
             initial: document.getElementById('initial-view'),
+            howToPlay: document.getElementById('how-to-play-view'),
             hostSetup: document.getElementById('host-setup-view'),
             playerJoin: document.getElementById('player-join-view'),
             lobby: document.getElementById('lobby-view'),
@@ -333,7 +368,8 @@
                         const urlParams = new URLSearchParams(window.location.search);
                         const gameIdFromUrl = urlParams.get('gameId');
                         if (gameIdFromUrl) {
-                            await joinGameWithId(gameIdFromUrl.toUpperCase());
+                            switchView('playerJoin');
+                            document.getElementById('game-id-input').value = gameIdFromUrl.toUpperCase();
                         }
 
                     } else {
@@ -471,13 +507,15 @@
         // 4. Game Actions (triggered by user)
         document.getElementById('host-game-btn').addEventListener('click', () => switchView('hostSetup'));
         document.getElementById('join-game-btn').addEventListener('click', () => switchView('playerJoin'));
+        document.getElementById('how-to-play-btn').addEventListener('click', () => switchView('howToPlay'));
         document.getElementById('back-to-initial-btn-host').addEventListener('click', resetToInitialView);
         document.getElementById('back-to-initial-btn-join').addEventListener('click', resetToInitialView);
+        document.getElementById('back-to-initial-btn-rules').addEventListener('click', resetToInitialView);
 
         document.getElementById('create-game-btn').addEventListener('click', async () => {
-            const playerName = document.getElementById('player-name').value.trim();
+            const playerName = document.getElementById('host-name-input').value.trim();
             if (!playerName) {
-                alert("Please go back and enter your name first!");
+                alert("Please enter your name!");
                 return;
             }
 
@@ -516,16 +554,9 @@
             listenToGame(currentGameId);
         });
         
-        async function joinGameWithId(gameId) {
-            const playerName = document.getElementById('player-name').value.trim();
-            if (!playerName) {
-                alert("Please go back to the main screen and enter your name.");
-                switchView('initial');
-                return;
-            }
-
-            if (!gameId || !userId) {
-                alert("Cannot join game. Missing Game ID or User ID.");
+        async function joinGameWithId(gameId, playerName) {
+            if (!gameId || !userId || !playerName) {
+                alert("Cannot join game. Missing info.");
                 return;
             }
 
@@ -544,7 +575,7 @@
                 const cleanUrl = window.location.href.split('?')[0];
                 window.history.replaceState({}, document.title, cleanUrl);
             } else {
-                alert("Game ID from link not found.");
+                alert("Game ID not found.");
                 const cleanUrl = window.location.href.split('?')[0];
                 window.history.replaceState({}, document.title, cleanUrl);
             }
@@ -552,11 +583,13 @@
 
         document.getElementById('submit-join-game-btn').addEventListener('click', async () => {
             const gameId = document.getElementById('game-id-input').value.trim().toUpperCase();
-            if (!gameId) {
-                alert("Please enter a Game ID.");
+            const playerName = document.getElementById('join-player-name-input').value.trim();
+
+            if (!gameId || !playerName) {
+                alert("Please enter your name and a Game ID.");
                 return;
             }
-            await joinGameWithId(gameId);
+            await joinGameWithId(gameId, playerName);
         });
         
         document.getElementById('copy-game-id-btn').addEventListener('click', () => {
@@ -612,7 +645,7 @@
 
             await updateDoc(gameRef, {
                 questions: arrayUnion(questionData),
-                [`players.${userId}.score`]: currentScore + 1 // Award 1 point for submitting a question
+                [`players.${userId}.score`]: currentScore + 10 // Award 10 points for submitting a question
             });
 
             document.getElementById('question-form').reset();
@@ -645,7 +678,7 @@
                         const gameSnap = await getDoc(gameRef);
                         if (gameSnap.exists() && gameSnap.data().hostId === auth.currentUser.uid) {
                             const gameData = gameSnap.data();
-                            const gameplayEndTime = Date.now() + gameData.config.totalPlayTime;
+                            const gameplayEndTime = Date.now() + gameData.config.totalPlayTime * 1000;
                             await updateDoc(gameRef, { 
                                 state: 'playing',
                                 gameplayEndTime: gameplayEndTime
@@ -692,6 +725,7 @@
 
             if(playerQuestions.length > 0) {
                 document.getElementById('question-container').classList.remove('hidden');
+                document.getElementById('player-finished-container').classList.add('hidden');
                 document.getElementById('waiting-for-questions').classList.add('hidden');
                 displayQuestion();
             } else {
@@ -841,6 +875,8 @@
             document.getElementById('question-form').reset();
             document.getElementById('player-list').innerHTML = '';
             document.getElementById('questions-submitted-count').textContent = '0';
+            document.getElementById('host-name-input').value = '';
+            document.getElementById('join-player-name-input').value = '';
 
 
             switchView('initial');
@@ -852,6 +888,4 @@
     </script>
 </body>
 </html>
-
-
 
