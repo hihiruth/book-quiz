@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Club Quiz Royale</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -100,12 +101,16 @@
             <div class="card text-center">
                 <h1 class="text-4xl font-bold text-gray-800 mb-2">Book Club Quiz Royale</h1>
                 <p class="text-gray-600 mb-8">Create a game for your book club or join an existing one.</p>
-                <div class="space-y-4">
+                
+                <label for="player-name" class="font-semibold text-gray-700 text-left block">Your Name</label>
+                <input type="text" id="player-name" class="input-field" placeholder="Enter your name..." required>
+
+                <div class="space-y-4 mt-4">
                     <button id="host-game-btn" class="btn btn-primary w-full">Host New Game</button>
                     <button id="join-game-btn" class="btn btn-secondary w-full">Join Game</button>
                 </div>
                  <div class="mt-8 text-sm text-gray-500">
-                    <p>Your User ID (share with friends to find you):</p>
+                    <p>Your User ID (for reference):</p>
                     <p id="user-id-display" class="font-mono bg-gray-200 rounded p-1 inline-block mt-1"></p>
                 </div>
             </div>
@@ -118,8 +123,8 @@
                 <label for="submission-time" class="font-semibold text-gray-700">Question Submission Time (minutes)</label>
                 <input type="number" id="submission-time" class="input-field" value="10" min="1">
                 
-                <label for="answer-time" class="font-semibold text-gray-700">Time Per Question (seconds)</label>
-                <input type="number" id="answer-time" class="input-field" value="30" min="5">
+                <label for="total-play-time" class="font-semibold text-gray-700">Total Play Time (minutes)</label>
+                <input type="number" id="total-play-time" class="input-field" value="15" min="1">
 
                 <button id="create-game-btn" class="btn btn-primary w-full mt-4">Create Game & Start Lobby</button>
                 <button id="back-to-initial-btn-host" class="btn btn-secondary w-full mt-2">Back</button>
@@ -141,14 +146,18 @@
         <div id="lobby-view" class="view flex-col items-center justify-center h-full">
             <div class="card text-center">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2">Game Lobby</h2>
-                <p class="text-gray-600 mb-4">Share the link below to invite players!</p>
-                <p class="mb-2 font-semibold">Game ID:</p>
-                <div class="flex items-center justify-center space-x-2 bg-gray-200 p-3 rounded-lg mb-6">
+                <p class="text-gray-600 mb-4">Share the link or scan the QR code to invite players!</p>
+                
+                <div class="flex items-center justify-center space-x-2 bg-gray-200 p-3 rounded-lg">
                     <span id="game-id-display" class="font-mono text-lg text-gray-800"></span>
                     <button id="copy-game-id-btn" class="btn btn-secondary btn-sm py-1 px-3">Copy Link</button>
                 </div>
 
-                <h3 class="font-semibold text-gray-700 mb-2">Players Joined:</h3>
+                <div id="qrcode" class="mx-auto my-4 w-40 h-40 border p-1 rounded-lg bg-white"></div>
+
+                <h3 class="font-semibold text-gray-700 mb-2">Host: <span id="host-name-display" class="font-normal"></span></h3>
+
+                <h3 class="font-semibold text-gray-700 mb-2 mt-4">Players Joined:</h3>
                 <div id="player-list" class="space-y-2 text-left bg-gray-50 p-4 rounded-lg min-h-[100px]">
                     <!-- Player names will be injected here -->
                 </div>
@@ -166,12 +175,12 @@
         <div id="question-submission-view" class="view flex-col items-center justify-center h-full">
             <div class="card">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800">Submit Your Questions</h2>
+                    <h2 id="submission-view-title" class="text-2xl font-bold text-gray-800">Submit Your Questions</h2>
                     <div class="text-lg font-bold bg-indigo-100 text-indigo-700 rounded-full px-4 py-2">
                         <span id="submission-timer">10:00</span>
                     </div>
                 </div>
-                <p class="text-gray-600 mb-6">Create a question with four options. Make sure to mark the correct one!</p>
+                <p id="submission-view-subtitle" class="text-gray-600 mb-6">Create a question with four options. Make sure to mark the correct one!</p>
                 <form id="question-form">
                     <label class="font-semibold">Question:</label>
                     <input type="text" id="question-text" class="input-field" required>
@@ -194,7 +203,7 @@
 
                     <button type="submit" class="btn btn-primary w-full mt-2">Submit Question</button>
                 </form>
-                <div class="mt-4 text-center">
+                <div id="submission-view-info" class="mt-4 text-center">
                     <p class="text-gray-700">You have submitted <span id="questions-submitted-count" class="font-bold">0</span> questions.</p>
                 </div>
             </div>
@@ -207,7 +216,7 @@
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold text-gray-500">Question <span id="current-question-number">1</span>/<span id="total-questions-number">10</span></h2>
                         <div class="text-lg font-bold bg-indigo-100 text-indigo-700 rounded-full px-4 py-2">
-                            <span id="question-timer">30</span>
+                           Time Left: <span id="game-timer">15:00</span>
                         </div>
                     </div>
                     <p id="game-question-text" class="text-2xl font-semibold text-gray-800 mb-8 min-h-[60px]"></p>
@@ -215,10 +224,17 @@
                        <!-- Options will be injected here -->
                     </div>
                     <div id="feedback-message" class="mt-6 text-xl font-bold"></div>
+                    <div id="host-gameplay-controls" class="hidden mt-6">
+                         <button id="end-game-now-btn" class="btn btn-secondary w-full">End Game For All Players</button>
+                    </div>
                 </div>
                  <div id="waiting-for-questions" class="text-center p-8 hidden">
                     <h2 class="text-2xl font-bold text-gray-800 mb-4">Get Ready!</h2>
                     <p class="text-gray-600">The quiz is about to begin. No questions were submitted by other players for you yet. Waiting...</p>
+                </div>
+                <div id="player-finished-container" class="text-center p-8 hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">You're Done! 🎉</h2>
+                    <p class="text-gray-600">Great job! You've answered all available questions. Please wait for the host to end the game for everyone.</p>
                 </div>
             </div>
         </div>
@@ -240,16 +256,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
         // --- App State ---
         let db, auth;
         let userId;
         let currentGameId = null;
+        let currentGameData = null; // Store current game data globally
         let gameUnsubscribe = null;
         let countdownTimer = null;
         let playerQuestions = [];
         let currentQuestionIndex = 0;
-        let questionCountdown = null;
+        let gameplayTimer = null;
 
         // --- Firebase Config ---
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -347,29 +363,40 @@
                 }
                 
                 const gameData = docSnap.data();
+                currentGameData = gameData; // Update global game data
                 updateUI(gameData);
             });
         }
 
         // 3. UI Updates based on Game State
         function updateUI(gameData) {
-            // Update player list in lobby
+            // Update host name and player list in lobby
+            document.getElementById('host-name-display').textContent = gameData.hostName || '...';
             const playerList = document.getElementById('player-list');
             playerList.innerHTML = '';
-            Object.values(gameData.players).forEach(player => {
-                const playerEl = document.createElement('div');
-                playerEl.textContent = `👤 ${player.id.substring(0,8)}... (Score: ${player.score})`;
-                playerList.appendChild(playerEl);
-            });
+            const playerCount = Object.keys(gameData.players).length;
+            if (playerCount === 0) {
+                 playerList.innerHTML = '<p class="text-gray-500 text-center">No players have joined yet.</p>';
+            } else {
+                Object.values(gameData.players).forEach(player => {
+                    const playerEl = document.createElement('div');
+                    playerEl.className = 'flex items-center space-x-2';
+                    const playerName = player.name || `Player ${player.id.substring(0,6)}`;
+                    playerEl.innerHTML = `<span class="font-semibold text-gray-800">👤 ${playerName}</span> <span class="text-sm text-gray-500">(Score: ${player.score})</span>`;
+                    playerList.appendChild(playerEl);
+                });
+            }
 
             // Show host controls
             const hostControls = document.getElementById('host-controls');
             const playerWaitMessage = document.getElementById('player-wait-message');
             if (userId === gameData.hostId) {
                 hostControls.classList.remove('hidden');
-                playerWaitMessage.classList.add('hidden');
+                playerWaitMessage.textContent = 'You are the host. Start the game when everyone is ready.';
+                playerWaitMessage.classList.remove('hidden');
             } else {
                 hostControls.classList.add('hidden');
+                playerWaitMessage.textContent = 'The host will start the game soon.';
                 playerWaitMessage.classList.remove('hidden');
             }
 
@@ -379,15 +406,55 @@
                 case 'lobby':
                     switchView('lobby');
                     document.getElementById('game-id-display').textContent = gameData.id;
+                    
+                    // Generate QR Code
+                    const qrCodeContainer = document.getElementById('qrcode');
+                    qrCodeContainer.innerHTML = ''; // Clear previous QR code
+                    const joinLink = `${window.location.href.split('?')[0]}?gameId=${gameData.id}`;
+                    new QRCode(qrCodeContainer, {
+                        text: joinLink,
+                        width: 160,
+                        height: 160,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
                     break;
                 case 'submitting':
                     switchView('questionSubmission');
                     startSubmissionTimer(gameData.submissionEndTime);
+
+                    const subViewTitle = document.getElementById('submission-view-title');
+                    const subViewSubtitle = document.getElementById('submission-view-subtitle');
+                    const subViewForm = document.getElementById('question-form');
+                    const subViewInfo = document.getElementById('submission-view-info');
+                    
+                    if (userId === gameData.hostId) {
+                        subViewTitle.textContent = 'Question Submission In Progress';
+                        subViewSubtitle.textContent = 'Players are submitting their questions. The quiz will begin when the timer ends.';
+                        subViewForm.classList.add('hidden');
+                        subViewInfo.innerHTML = `<p class="text-lg">Total Questions Submitted: <span class="font-bold text-2xl text-indigo-600">${gameData.questions.length}</span></p>`;
+                    } else {
+                        // For players
+                        subViewTitle.textContent = 'Submit Your Questions';
+                        subViewSubtitle.textContent = 'Create a question with four options. Make sure to mark the correct one!';
+                        subViewForm.classList.remove('hidden');
+                        const myQuestionsCount = gameData.questions.filter(q => q.authorId === userId).length;
+                        subViewInfo.innerHTML = `<p class="text-gray-700">You have submitted <span class="font-bold">${myQuestionsCount}</span> questions.</p>`;
+                    }
                     break;
                 case 'playing':
                     if (gameData.questions.length > 0) {
+                        startGameplayTimer(gameData.gameplayEndTime);
                         prepareGameplay(gameData);
                         switchView('gameplay');
+
+                        const hostGameplayControls = document.getElementById('host-gameplay-controls');
+                        if (userId === gameData.hostId) {
+                            hostGameplayControls.classList.remove('hidden');
+                        } else {
+                            hostGameplayControls.classList.add('hidden');
+                        }
                     } else {
                         // Handle case where no questions are submitted
                         switchView('scoreboard'); // Or a special "no questions" view
@@ -408,8 +475,14 @@
         document.getElementById('back-to-initial-btn-join').addEventListener('click', resetToInitialView);
 
         document.getElementById('create-game-btn').addEventListener('click', async () => {
+            const playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) {
+                alert("Please go back and enter your name first!");
+                return;
+            }
+
             const submissionTime = parseInt(document.getElementById('submission-time').value) * 60;
-            const answerTime = parseInt(document.getElementById('answer-time').value);
+            const totalPlayTime = parseInt(document.getElementById('total-play-time').value) * 60;
 
             let newGameId;
             let gameExists = true;
@@ -430,13 +503,13 @@
             const gameData = {
                 id: currentGameId,
                 hostId: userId,
-                config: { submissionTime, answerTime },
+                hostName: playerName,
+                config: { submissionTime, totalPlayTime },
                 state: 'lobby', // lobby, submitting, playing, finished
-                players: {
-                    [userId]: { id: userId, score: 0 }
-                },
+                players: {}, // Host is not a player
                 questions: [],
                 submissionEndTime: null,
+                gameplayEndTime: null,
             };
 
             await setDoc(doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId), gameData);
@@ -444,6 +517,13 @@
         });
         
         async function joinGameWithId(gameId) {
+            const playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) {
+                alert("Please go back to the main screen and enter your name.");
+                switchView('initial');
+                return;
+            }
+
             if (!gameId || !userId) {
                 alert("Cannot join game. Missing Game ID or User ID.");
                 return;
@@ -457,7 +537,7 @@
                 const gameData = gameSnap.data();
                 if (!gameData.players[userId]) {
                      await updateDoc(gameRef, {
-                        [`players.${userId}`]: { id: userId, score: 0 }
+                        [`players.${userId}`]: { id: userId, name: playerName, score: 0 }
                     });
                 }
                 listenToGame(currentGameId);
@@ -526,17 +606,26 @@
             };
 
             const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
+            // Atomically increment score
+            const gameSnap = await getDoc(gameRef);
+            const currentScore = gameSnap.data().players[userId]?.score || 0;
+
             await updateDoc(gameRef, {
                 questions: arrayUnion(questionData),
-                [`players.${userId}.score`]: 1 // Award 1 point for submitting a question
+                [`players.${userId}.score`]: currentScore + 1 // Award 1 point for submitting a question
             });
 
             document.getElementById('question-form').reset();
-            const countEl = document.getElementById('questions-submitted-count');
-            countEl.textContent = parseInt(countEl.textContent) + 1;
         });
 
         document.getElementById('play-again-btn').addEventListener('click', resetToInitialView);
+
+        document.getElementById('end-game-now-btn').addEventListener('click', async () => {
+            if (currentGameData && userId === currentGameData.hostId) {
+                const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
+                await updateDoc(gameRef, { state: 'finished' });
+            }
+        });
 
         // 5. Timers and Gameplay Logic
         function startSubmissionTimer(endTime) {
@@ -555,7 +644,35 @@
                         const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
                         const gameSnap = await getDoc(gameRef);
                         if (gameSnap.exists() && gameSnap.data().hostId === auth.currentUser.uid) {
-                            await updateDoc(gameRef, { state: 'playing' });
+                            const gameData = gameSnap.data();
+                            const gameplayEndTime = Date.now() + gameData.config.totalPlayTime;
+                            await updateDoc(gameRef, { 
+                                state: 'playing',
+                                gameplayEndTime: gameplayEndTime
+                            });
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        function startGameplayTimer(endTime) {
+            if (gameplayTimer) clearInterval(gameplayTimer);
+            
+            const timerEl = document.getElementById('game-timer');
+            
+            gameplayTimer = setInterval(async () => {
+                const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+                timerEl.textContent = formatTime(remaining);
+
+                if (remaining === 0) {
+                    clearInterval(gameplayTimer);
+                    // Host transitions the game to the finished state
+                    if (auth.currentUser && currentGameId) {
+                        const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
+                        const gameSnap = await getDoc(gameRef);
+                        if (gameSnap.exists() && gameSnap.data().hostId === auth.currentUser.uid) {
+                            await updateDoc(gameRef, { state: 'finished' });
                         }
                     }
                 }
@@ -563,14 +680,20 @@
         }
         
         function prepareGameplay(gameData) {
-            playerQuestions = gameData.questions.filter(q => q.authorId !== userId);
+            if (userId === gameData.hostId) {
+                // Host sees all questions
+                playerQuestions = gameData.questions;
+            } else {
+                // Player sees questions from others
+                playerQuestions = gameData.questions.filter(q => q.authorId !== userId);
+            }
             playerQuestions.sort(() => Math.random() - 0.5); // Shuffle questions
             currentQuestionIndex = 0;
 
             if(playerQuestions.length > 0) {
                 document.getElementById('question-container').classList.remove('hidden');
                 document.getElementById('waiting-for-questions').classList.add('hidden');
-                displayQuestion(gameData.config.answerTime);
+                displayQuestion();
             } else {
                  document.getElementById('question-container').classList.add('hidden');
                  document.getElementById('waiting-for-questions').classList.remove('hidden');
@@ -584,13 +707,14 @@
             }
         }
 
-        function displayQuestion(timeLimit) {
+        function displayQuestion() {
             if (currentQuestionIndex >= playerQuestions.length) {
-                // Game over for this player
-                if(userId === auth.currentUser.uid) { // Let host end the game
-                     const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
-                     updateDoc(gameRef, { state: 'finished' });
+                // Player has finished all their questions.
+                if(currentGameData && userId !== currentGameData.hostId) {
+                    document.getElementById('question-container').classList.add('hidden');
+                    document.getElementById('player-finished-container').classList.remove('hidden');
                 }
+                // Host has finished spectating, they can now wait for timer or end manually.
                 return;
             }
             
@@ -608,35 +732,27 @@
                 button.className = 'btn option-btn p-4 text-left w-full';
                 button.textContent = `${key}: ${value}`;
                 button.dataset.option = key;
-                button.onclick = () => handleAnswer(key, q.correct, timeLimit);
+                button.onclick = () => handleAnswer(key, q.correct);
+                
+                if (currentGameData && userId === currentGameData.hostId) {
+                    button.classList.add('cursor-not-allowed');
+                    button.onclick = null; // Disable click for host
+                }
+
                 optionsContainer.appendChild(button);
             });
-            
-            startQuestionTimer(timeLimit, q.correct);
         }
 
-        function startQuestionTimer(duration, correctAnswer) {
-            if(questionCountdown) clearInterval(questionCountdown);
-            let timeLeft = duration;
-            const timerEl = document.getElementById('question-timer');
-            timerEl.textContent = timeLeft;
-
-            questionCountdown = setInterval(() => {
-                timeLeft--;
-                timerEl.textContent = timeLeft;
-                if(timeLeft <= 0) {
-                    clearInterval(questionCountdown);
-                    handleAnswer(null, correctAnswer, duration); // Timeout
-                }
-            }, 1000);
-        }
-
-        async function handleAnswer(selectedOption, correctOption, timeLimit) {
-            clearInterval(questionCountdown);
-            
+        async function handleAnswer(selectedOption, correctOption) {
             const options = document.querySelectorAll('#game-options .option-btn');
-            let answeredCorrectly = false;
             
+            // Prevent host from triggering answer logic
+            if (currentGameData && userId === currentGameData.hostId) {
+                currentQuestionIndex++;
+                setTimeout(() => displayQuestion(), 2000);
+                return;
+            }
+
             options.forEach(btn => {
                 btn.disabled = true;
                 const optionKey = btn.dataset.option;
@@ -665,12 +781,11 @@
                 document.getElementById('feedback-message').textContent = 'Wrong answer.';
                  document.getElementById('feedback-message').className = 'mt-6 text-xl font-bold text-red-600';
             } else {
-                document.getElementById('feedback-message').textContent = "Time's up!";
-                 document.getElementById('feedback-message').className = 'mt-6 text-xl font-bold text-yellow-600';
+                // This case is no longer reachable with no per-question timer
             }
 
             currentQuestionIndex++;
-            setTimeout(() => displayQuestion(timeLimit), 2000); // Wait 2 seconds before next question
+            setTimeout(() => displayQuestion(), 2000); // Wait 2 seconds before next question
         }
         
         function displayFinalScores(players) {
@@ -697,29 +812,27 @@
                 }
 
                 scoreEl.innerHTML = `
-                    <span class="font-bold text-lg">${medal} ${player.id.substring(0,12)}...</span>
+                    <span class="font-bold text-lg">${medal} ${player.name || player.id.substring(0,12)}</span>
                     <span class="text-xl font-bold text-indigo-600">${player.score} points</span>
                 `;
                 scoresList.appendChild(scoreEl);
             });
 
-            const hostControls = document.getElementById('play-again-btn');
-            const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
-            getDoc(gameRef).then(docSnap => {
-                if (docSnap.exists() && userId === docSnap.data().hostId) {
-                    hostControls.classList.remove('hidden');
-                } else {
-                    hostControls.classList.add('hidden');
-                }
-            });
+            const playAgainBtn = document.getElementById('play-again-btn');
+            if (currentGameData && userId === currentGameData.hostId) {
+                playAgainBtn.classList.remove('hidden');
+            } else {
+                playAgainBtn.classList.add('hidden');
+            }
         }
         
         function resetToInitialView() {
             if (gameUnsubscribe) gameUnsubscribe();
             if (countdownTimer) clearInterval(countdownTimer);
-            if (questionCountdown) clearInterval(questionCountdown);
+            if (gameplayTimer) clearInterval(gameplayTimer);
 
             currentGameId = null;
+            currentGameData = null;
             playerQuestions = [];
             currentQuestionIndex = 0;
             
@@ -739,4 +852,6 @@
     </script>
 </body>
 </html>
+
+
 
