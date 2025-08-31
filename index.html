@@ -267,7 +267,7 @@
             </div>
         </div>
         
-        <!-- Gameplay View -->
+        <!-- Gameplay View (For Players) -->
         <div id="gameplay-view" class="view flex-col items-center justify-center h-full">
             <div class="card w-full max-w-2xl text-center">
                  <div id="question-container">
@@ -282,9 +282,6 @@
                        <!-- Options will be injected here -->
                     </div>
                     <div id="feedback-message" class="mt-6 text-xl font-bold"></div>
-                    <div id="host-gameplay-controls" class="hidden mt-6">
-                         <button id="end-game-now-btn" class="btn btn-secondary w-full">End Game For All Players</button>
-                    </div>
                 </div>
                  <div id="waiting-for-questions" class="text-center p-8 hidden">
                     <h2 class="text-2xl font-bold text-gray-800 mb-4">Get Ready!</h2>
@@ -294,6 +291,23 @@
                     <h2 class="text-2xl font-bold text-gray-800 mb-4">You're Done! 🎉</h2>
                     <p class="text-gray-600">Great job! You've answered all available questions. Please wait for the host to end the game for everyone.</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Host Gameplay View (New) -->
+        <div id="host-gameplay-view" class="view flex-col items-center justify-center h-full">
+            <div class="card w-full max-w-lg text-center">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Game in Progress</h2>
+                    <div class="text-lg font-bold bg-indigo-100 text-indigo-700 rounded-full px-4 py-2">
+                       Time Left: <span id="host-game-timer">15:00</span>
+                    </div>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">Live Leaderboard</h3>
+                <div id="live-leaderboard-list" class="space-y-2 text-left bg-gray-50 p-4 rounded-lg min-h-[200px]">
+                    <!-- Live scores will be injected here -->
+                </div>
+                <button id="end-game-now-btn" class="btn btn-secondary w-full mt-8">End Game For All Players</button>
             </div>
         </div>
 
@@ -358,6 +372,7 @@
             lobby: document.getElementById('lobby-view'),
             questionSubmission: document.getElementById('question-submission-view'),
             gameplay: document.getElementById('gameplay-view'),
+            hostGameplay: document.getElementById('host-gameplay-view'),
             scoreboard: document.getElementById('scoreboard-view')
         };
 
@@ -450,7 +465,8 @@
             if (playerCount === 0) {
                  playerList.innerHTML = '<p class="text-gray-500 text-center">No players have joined yet.</p>';
             } else {
-                Object.values(gameData.players).forEach(player => {
+                const sortedPlayers = Object.values(gameData.players).sort((a,b) => b.score - a.score);
+                sortedPlayers.forEach(player => {
                     const playerEl = document.createElement('div');
                     playerEl.className = 'flex items-center space-x-2';
                     const playerName = player.name || `Player ${player.id.substring(0,6)}`;
@@ -516,30 +532,29 @@
                     }
                     break;
                 case 'playing':
-                    // If this player has finished their quiz, do not re-render their game.
-                    if (isPlayerFinished) {
-                        break;
-                    }
-                
-                    // Only setup the game view if we are not already in it
-                    if (!views.gameplay.classList.contains('active')) {
-                        if (gameData.questions.length > 0) {
-                            startGameplayTimer(gameData.gameplayEndTime);
-                            prepareGameplay(gameData);
-                            switchView('gameplay');
-                        } else {
-                            // Handle case where no questions are submitted
-                            switchView('scoreboard'); // Or a special "no questions" view
-                            displayFinalScores(gameData.players);
-                        }
-                    }
-                    
-                    // Always ensure host controls are correctly shown/hidden on updates
-                    const hostGameplayControls = document.getElementById('host-gameplay-controls');
+                    startGameplayTimer(gameData.gameplayEndTime);
                     if (userId === gameData.hostId) {
-                        hostGameplayControls.classList.remove('hidden');
+                        switchView('hostGameplay');
+                        updateLiveLeaderboard(gameData.players);
                     } else {
-                        hostGameplayControls.classList.add('hidden');
+                        // Player logic
+                        if (isPlayerFinished) {
+                            // If player is finished, keep them on their "You're Done" screen
+                             if (!views.gameplay.classList.contains('active')) switchView('gameplay');
+                             document.getElementById('question-container').classList.add('hidden');
+                             document.getElementById('player-finished-container').classList.remove('hidden');
+                            break;
+                        }
+
+                        if (!views.gameplay.classList.contains('active')) {
+                            if (gameData.questions.length > 0) {
+                                prepareGameplay(gameData);
+                                switchView('gameplay');
+                            } else {
+                                switchView('scoreboard');
+                                displayFinalScores(gameData.players);
+                            }
+                        }
                     }
                     break;
                 case 'finished':
@@ -547,6 +562,41 @@
                     displayFinalScores(gameData.players);
                     break;
             }
+        }
+        
+        function updateLiveLeaderboard(players) {
+            const leaderboardList = document.getElementById('live-leaderboard-list');
+            leaderboardList.innerHTML = '';
+            const sortedPlayers = Object.values(players).sort((a, b) => b.score - a.score);
+
+            if (sortedPlayers.length === 0) {
+                leaderboardList.innerHTML = '<p class="text-gray-500 text-center">Waiting for players to score...</p>';
+                return;
+            }
+
+            sortedPlayers.forEach((player, index) => {
+                const playerEl = document.createElement('div');
+                playerEl.className = 'flex justify-between items-center p-2 rounded-lg';
+                let medal = '';
+                if(index === 0) {
+                     playerEl.classList.add('bg-yellow-100');
+                     medal = '🥇';
+                } else if (index === 1) {
+                     playerEl.classList.add('bg-gray-200');
+                     medal = '🥈';
+                } else if (index === 2) {
+                     playerEl.classList.add('bg-yellow-50');
+                     medal = '🥉';
+                } else {
+                    playerEl.classList.add('bg-gray-50');
+                }
+
+                playerEl.innerHTML = `
+                    <span class="font-semibold text-gray-800"><span class="inline-block w-6 text-center mr-2">${medal || (index + 1) + '.'}</span> ${player.name}</span>
+                    <span class="font-bold text-indigo-600">${player.score} pts</span>
+                `;
+                leaderboardList.appendChild(playerEl);
+            });
         }
 
         // 4. Game Actions (triggered by user)
@@ -737,11 +787,15 @@
         function startGameplayTimer(endTime) {
             if (gameplayTimer) clearInterval(gameplayTimer);
             
-            const timerEl = document.getElementById('game-timer');
+            const playerTimerEl = document.getElementById('game-timer');
+            const hostTimerEl = document.getElementById('host-game-timer');
             
             gameplayTimer = setInterval(async () => {
                 const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-                timerEl.textContent = formatTime(remaining);
+                const formattedTime = formatTime(remaining);
+                
+                if (playerTimerEl) playerTimerEl.textContent = formattedTime;
+                if (hostTimerEl) hostTimerEl.textContent = formattedTime;
 
                 if (remaining === 0) {
                     clearInterval(gameplayTimer);
@@ -759,13 +813,8 @@
         
         function prepareGameplay(gameData) {
             isPlayerFinished = false; // Reset finished state for new round
-            if (userId === gameData.hostId) {
-                // Host sees all questions
-                playerQuestions = gameData.questions;
-            } else {
-                // Player sees questions from others
-                playerQuestions = gameData.questions.filter(q => q.authorId !== userId);
-            }
+            // Player sees questions from others
+            playerQuestions = gameData.questions.filter(q => q.authorId !== userId);
             playerQuestions.sort(() => Math.random() - 0.5); // Shuffle questions
             currentQuestionIndex = 0;
 
@@ -777,25 +826,15 @@
             } else {
                  document.getElementById('question-container').classList.add('hidden');
                  document.getElementById('waiting-for-questions').classList.remove('hidden');
-                 // If host, automatically end game after a delay
-                 if(userId === gameData.hostId) {
-                     setTimeout(async () => {
-                        const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
-                        await updateDoc(gameRef, { state: 'finished' });
-                     }, 5000);
-                 }
             }
         }
 
         function displayQuestion() {
             if (currentQuestionIndex >= playerQuestions.length) {
                 // Player has finished all their questions.
-                if(currentGameData && userId !== currentGameData.hostId) {
-                    isPlayerFinished = true; // Mark player as finished
-                    document.getElementById('question-container').classList.add('hidden');
-                    document.getElementById('player-finished-container').classList.remove('hidden');
-                }
-                // Host has finished spectating, they can now wait for timer or end manually.
+                isPlayerFinished = true; // Mark player as finished
+                document.getElementById('question-container').classList.add('hidden');
+                document.getElementById('player-finished-container').classList.remove('hidden');
                 return;
             }
             
@@ -808,7 +847,6 @@
             const optionsContainer = document.getElementById('game-options');
             optionsContainer.innerHTML = '';
             
-            // Sort the keys to ensure options always appear in A, B, C, D order
             const sortedKeys = Object.keys(q.options).sort();
 
             sortedKeys.forEach(key => {
@@ -818,12 +856,6 @@
                 button.textContent = `${key}: ${value}`;
                 button.dataset.option = key;
                 button.onclick = () => handleAnswer(key, q.correct);
-                
-                if (currentGameData && userId === currentGameData.hostId) {
-                    button.classList.add('cursor-not-allowed');
-                    button.onclick = null; // Disable click for host
-                }
-
                 optionsContainer.appendChild(button);
             });
         }
@@ -831,13 +863,6 @@
         async function handleAnswer(selectedOption, correctOption) {
             const options = document.querySelectorAll('#game-options .option-btn');
             
-            // Prevent host from triggering answer logic
-            if (currentGameData && userId === currentGameData.hostId) {
-                currentQuestionIndex++;
-                setTimeout(() => displayQuestion(), 2000);
-                return;
-            }
-
             options.forEach(btn => {
                 btn.disabled = true;
                 const optionKey = btn.dataset.option;
@@ -865,8 +890,6 @@
             } else if (selectedOption) {
                 document.getElementById('feedback-message').textContent = 'Wrong answer.';
                  document.getElementById('feedback-message').className = 'mt-6 text-xl font-bold text-red-600';
-            } else {
-                // This case is no longer reachable with no per-question timer
             }
 
             currentQuestionIndex++;
