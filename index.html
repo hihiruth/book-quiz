@@ -300,6 +300,7 @@
         let playerQuestions = [];
         let currentQuestionIndex = 0;
         let gameplayTimer = null;
+        let isPlayerFinished = false; // Player-specific state to prevent quiz reset
 
         // --- Firebase Config ---
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -480,21 +481,30 @@
                     }
                     break;
                 case 'playing':
-                    if (gameData.questions.length > 0) {
-                        startGameplayTimer(gameData.gameplayEndTime);
-                        prepareGameplay(gameData);
-                        switchView('gameplay');
-
-                        const hostGameplayControls = document.getElementById('host-gameplay-controls');
-                        if (userId === gameData.hostId) {
-                            hostGameplayControls.classList.remove('hidden');
+                    // If this player has finished their quiz, do not re-render their game.
+                    if (isPlayerFinished) {
+                        break;
+                    }
+                
+                    // Only setup the game view if we are not already in it
+                    if (!views.gameplay.classList.contains('active')) {
+                        if (gameData.questions.length > 0) {
+                            startGameplayTimer(gameData.gameplayEndTime);
+                            prepareGameplay(gameData);
+                            switchView('gameplay');
                         } else {
-                            hostGameplayControls.classList.add('hidden');
+                            // Handle case where no questions are submitted
+                            switchView('scoreboard'); // Or a special "no questions" view
+                            displayFinalScores(gameData.players);
                         }
+                    }
+                    
+                    // Always ensure host controls are correctly shown/hidden on updates
+                    const hostGameplayControls = document.getElementById('host-gameplay-controls');
+                    if (userId === gameData.hostId) {
+                        hostGameplayControls.classList.remove('hidden');
                     } else {
-                        // Handle case where no questions are submitted
-                        switchView('scoreboard'); // Or a special "no questions" view
-                        displayFinalScores(gameData.players);
+                        hostGameplayControls.classList.add('hidden');
                     }
                     break;
                 case 'finished':
@@ -713,6 +723,7 @@
         }
         
         function prepareGameplay(gameData) {
+            isPlayerFinished = false; // Reset finished state for new round
             if (userId === gameData.hostId) {
                 // Host sees all questions
                 playerQuestions = gameData.questions;
@@ -745,6 +756,7 @@
             if (currentQuestionIndex >= playerQuestions.length) {
                 // Player has finished all their questions.
                 if(currentGameData && userId !== currentGameData.hostId) {
+                    isPlayerFinished = true; // Mark player as finished
                     document.getElementById('question-container').classList.add('hidden');
                     document.getElementById('player-finished-container').classList.remove('hidden');
                 }
@@ -761,7 +773,11 @@
             const optionsContainer = document.getElementById('game-options');
             optionsContainer.innerHTML = '';
             
-            Object.entries(q.options).forEach(([key, value]) => {
+            // Sort the keys to ensure options always appear in A, B, C, D order
+            const sortedKeys = Object.keys(q.options).sort();
+
+            sortedKeys.forEach(key => {
+                const value = q.options[key];
                 const button = document.createElement('button');
                 button.className = 'btn option-btn p-4 text-left w-full';
                 button.textContent = `${key}: ${value}`;
@@ -869,6 +885,7 @@
             currentGameData = null;
             playerQuestions = [];
             currentQuestionIndex = 0;
+            isPlayerFinished = false;
             
             // Clear inputs and dynamic content
             document.getElementById('game-id-input').value = '';
