@@ -689,7 +689,7 @@
         
         const views = { initial: document.getElementById('initial-view'), howToPlay: document.getElementById('how-to-play-view'), hostSetup: document.getElementById('host-setup-view'), playerJoin: document.getElementById('player-join-view'), lobby: document.getElementById('lobby-view'), questionSubmission: document.getElementById('question-submission-view'), gameplay: document.getElementById('gameplay-view'), hostGameplay: document.getElementById('host-gameplay-view'), scoreboard: document.getElementById('scoreboard-view') };
         const userIdDisplay = document.getElementById('user-id-display');
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID", storageBucket: "YOUR_STORAGE_BUCKET", messagingSenderId: "YOUR_SENDER_ID", appId: "YOUR_APP_ID" };
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "AIzaSyARY3zVYRUVO1wGxXBJDTCHo23lXxxxA2M", authDomain: "concrete-domain-383905.firebaseapp.com", projectId: "concrete-domain-383905", storageBucket: "concrete-domain-383905.firebasestorage.app", messagingSenderId: "626887947873", appId: "1:626887947873:web:a3598c7e542678f1ec9c20", measurementId: "G-JLHHPW855R" };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'book-club-quiz-default';
         
         function switchView(viewName) { Object.values(views).forEach(view => view.classList.remove('active')); if (views[viewName]) { views[viewName].classList.add('active'); } }
@@ -1146,4 +1146,6 @@
     </script>
 </body>
 </html>
+
+
 
