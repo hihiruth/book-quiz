@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Club Quiz Royale</title>
+    <title>Quiz Royale</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,6 +30,7 @@
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
             width: 100%;
             max-width: 500px;
+            position: relative;
         }
         .btn {
             display: inline-block;
@@ -53,6 +54,17 @@
         }
         .btn-secondary:hover {
             background-color: #d1d5db;
+        }
+        .btn-lang {
+            background-color: transparent;
+            color: #6b7280;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .btn-lang.active {
+            background-color: #eef2ff;
+            color: #4f46e5;
+            font-weight: 600;
         }
         .input-field {
             width: 100%;
@@ -123,16 +135,20 @@
         <!-- Initial Screen: Host or Join -->
         <div id="initial-view" class="view active flex-col items-center justify-center h-full">
             <div class="card text-center">
-                <h1 class="text-4xl font-bold text-gray-800 mb-2">Book Club Quiz Royale</h1>
-                <p class="text-gray-600 mb-8">Create a game for your book club or join an existing one.</p>
+                 <div class="absolute top-4 right-4 text-sm">
+                    <button id="lang-en" class="btn-lang">EN</button>
+                    <button id="lang-zh" class="btn-lang">繁中</button>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2" data-translate-key="appTitle">Book Club Quiz Royale</h1>
+                <p class="text-gray-600 mb-8" data-translate-key="appDescription">Create a game for your book club or join an existing one.</p>
                 
                 <div class="space-y-4 mt-4">
-                    <button id="host-game-btn" class="btn btn-primary w-full">Host New Game</button>
-                    <button id="join-game-btn" class="btn btn-secondary w-full">Join Game</button>
-                    <button id="how-to-play-btn" class="btn btn-secondary w-full">How to Play</button>
+                    <button id="host-game-btn" class="btn btn-primary w-full" data-translate-key="hostGameBtn">Host New Game</button>
+                    <button id="join-game-btn" class="btn btn-secondary w-full" data-translate-key="joinGameBtn">Join Game</button>
+                    <button id="how-to-play-btn" class="btn btn-secondary w-full" data-translate-key="howToPlayBtn">How to Play</button>
                 </div>
                  <div class="mt-8 text-sm text-gray-500">
-                    <p>Your User ID (for reference):</p>
+                    <p data-translate-key="yourUserIdLabel">Your User ID (for reference):</p>
                     <p id="user-id-display" class="font-mono bg-gray-200 rounded p-1 inline-block mt-1"></p>
                 </div>
             </div>
@@ -141,90 +157,90 @@
         <!-- How to Play View -->
         <div id="how-to-play-view" class="view flex-col items-center justify-center h-full">
             <div class="card">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">How to Play</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center" data-translate-key="howToPlayTitle">How to Play</h2>
                 <div class="space-y-4 text-gray-700">
                     <div>
-                        <h3 class="font-bold text-lg text-indigo-600">Phase 1: Question Submission</h3>
-                        <p>The host sets a timer. All players must create and submit quiz questions based on the book. You cannot answer your own questions later, so be creative!</p>
+                        <h3 class="font-bold text-lg text-indigo-600" data-translate-key="phase1Title">Phase 1: Question Submission</h3>
+                        <p data-translate-key="phase1Desc">The host sets a timer. All players must create and submit quiz questions based on the book. You cannot answer your own questions later, so be creative!</p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg text-indigo-600">Phase 2: The Quiz</h3>
-                        <p>Once the submission time is up, the quiz begins! You will be shown questions written by other players, one by one. Answer as many as you can before the main game timer runs out.</p>
+                        <h3 class="font-bold text-lg text-indigo-600" data-translate-key="phase2Title">Phase 2: The Quiz</h3>
+                        <p data-translate-key="phase2Desc">Once the submission time is up, the quiz begins! You will be shown questions written by other players, one by one. Answer as many as you can before the main game timer runs out.</p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg text-indigo-600">Scoring System</h3>
+                        <h3 class="font-bold text-lg text-indigo-600" data-translate-key="scoringTitle">Scoring System</h3>
                         <ul class="list-disc list-inside space-y-1 mt-2">
-                            <li><span class="font-semibold text-green-600">+10 Points</span> for each question you submit.</li>
-                            <li><span class="font-semibold text-green-600">+10 Points</span> for each question you answer correctly.</li>
-                            <li>There is no penalty for wrong answers.</li>
+                            <li data-translate-key="scoringPoint1"><span class="font-semibold text-green-600">+10 Points</span> for each question you submit.</li>
+                            <li data-translate-key="scoringPoint2"><span class="font-semibold text-green-600">+10 Points</span> for each question you answer correctly.</li>
+                            <li data-translate-key="scoringPoint3">There is no penalty for wrong answers.</li>
                         </ul>
                     </div>
-                    <p class="font-semibold text-center pt-4">The player with the highest total score wins. Good luck!</p>
+                    <p class="font-semibold text-center pt-4" data-translate-key="goodLuck">The player with the highest total score wins. Good luck!</p>
                 </div>
-                <button id="back-to-initial-btn-rules" class="btn btn-primary w-full mt-8">Got it!</button>
+                <button id="back-to-initial-btn-rules" class="btn btn-primary w-full mt-8" data-translate-key="gotItBtn">Got it!</button>
             </div>
         </div>
 
         <!-- Host Setup View -->
         <div id="host-setup-view" class="view flex-col items-center justify-center h-full">
             <div class="card">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Game Setup</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center" data-translate-key="gameSetupTitle">Game Setup</h2>
                 
-                <label for="host-name-input" class="font-semibold text-gray-700">Your Name (as Host)</label>
-                <input type="text" id="host-name-input" class="input-field" placeholder="Enter your name..." required>
+                <label for="host-name-input" class="font-semibold text-gray-700" data-translate-key="yourNameLabel">Your Name (as Host)</label>
+                <input type="text" id="host-name-input" class="input-field" data-translate-key="yourNamePlaceholder" placeholder="Enter your name..." required>
 
-                <label for="submission-time" class="font-semibold text-gray-700">Question Submission Time (minutes)</label>
+                <label for="submission-time" class="font-semibold text-gray-700" data-translate-key="submissionTimeLabel">Question Submission Time (minutes)</label>
                 <input type="number" id="submission-time" class="input-field" value="10" min="1">
                 
-                <label for="total-play-time" class="font-semibold text-gray-700">Total Play Time (minutes)</label>
+                <label for="total-play-time" class="font-semibold text-gray-700" data-translate-key="playTimeLabel">Total Play Time (minutes)</label>
                 <input type="number" id="total-play-time" class="input-field" value="15" min="1">
 
-                <button id="create-game-btn" class="btn btn-primary w-full mt-4">Create Game & Start Lobby</button>
-                <button id="back-to-initial-btn-host" class="btn btn-secondary w-full mt-2">Back</button>
+                <button id="create-game-btn" class="btn btn-primary w-full mt-4" data-translate-key="createGameBtn">Create Game & Start Lobby</button>
+                <button id="back-to-initial-btn-host" class="btn btn-secondary w-full mt-2" data-translate-key="backBtn">Back</button>
             </div>
         </div>
 
         <!-- Player Join View -->
         <div id="player-join-view" class="view flex-col items-center justify-center h-full">
             <div class="card">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Join a Game</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center" data-translate-key="joinGameTitle">Join a Game</h2>
                 
-                <label for="join-player-name-input" class="font-semibold text-gray-700">Your Name</label>
-                <input type="text" id="join-player-name-input" class="input-field" placeholder="Enter your name..." required>
+                <label for="join-player-name-input" class="font-semibold text-gray-700" data-translate-key="yourNameLabel">Your Name</label>
+                <input type="text" id="join-player-name-input" class="input-field" data-translate-key="yourNamePlaceholder" placeholder="Enter your name..." required>
 
-                <label for="game-id-input" class="font-semibold text-gray-700">Enter Game ID</label>
-                <input type="text" id="game-id-input" class="input-field uppercase" placeholder="e.g. AB12C" maxlength="5">
+                <label for="game-id-input" class="font-semibold text-gray-700" data-translate-key="gameIdLabel">Enter Game ID</label>
+                <input type="text" id="game-id-input" class="input-field uppercase" data-translate-key="gameIdPlaceholder" placeholder="e.g. AB12C" maxlength="5">
                 
-                <button id="submit-join-game-btn" class="btn btn-primary w-full">Join</button>
-                <button id="back-to-initial-btn-join" class="btn btn-secondary w-full mt-2">Back</button>
+                <button id="submit-join-game-btn" class="btn btn-primary w-full" data-translate-key="joinBtn">Join</button>
+                <button id="back-to-initial-btn-join" class="btn btn-secondary w-full mt-2" data-translate-key="backBtn">Back</button>
             </div>
         </div>
 
         <!-- Lobby View -->
         <div id="lobby-view" class="view flex-col items-center justify-center h-full">
             <div class="card text-center">
-                <h2 id="lobby-title" class="text-3xl font-bold text-gray-800 mb-2">Game Lobby</h2>
+                <h2 id="lobby-title" class="text-3xl font-bold text-gray-800 mb-2" data-translate-key="lobbyTitle">Game Lobby</h2>
                 
                 <div id="invite-container">
-                    <p class="text-gray-600 mb-4">Share the link or scan the QR code to invite players!</p>
+                    <p class="text-gray-600 mb-4" data-translate-key="inviteMessage">Share the link or scan the QR code to invite players!</p>
                     <div class="flex items-center justify-center space-x-2 bg-gray-200 p-3 rounded-lg">
                         <span id="game-id-display" class="font-mono text-lg text-gray-800"></span>
-                        <button id="copy-game-id-btn" class="btn btn-secondary btn-sm py-1 px-3">Copy Link</button>
+                        <button id="copy-game-id-btn" class="btn btn-secondary btn-sm py-1 px-3" data-translate-key="copyLinkBtn">Copy Link</button>
                     </div>
                     <div id="qrcode" class="mx-auto my-4 w-40 h-40 border p-1 rounded-lg bg-white"></div>
                 </div>
 
-                <h3 class="font-semibold text-gray-700 mb-2">Host: <span id="host-name-display" class="font-normal"></span></h3>
+                <h3 class="font-semibold text-gray-700 mb-2"><span data-translate-key="hostLabel">Host:</span> <span id="host-name-display" class="font-normal"></span></h3>
 
-                <h3 class="font-semibold text-gray-700 mb-2 mt-4">Players Joined:</h3>
+                <h3 class="font-semibold text-gray-700 mb-2 mt-4" data-translate-key="playersJoinedLabel">Players Joined:</h3>
                 <div id="player-list" class="space-y-2 text-left bg-gray-50 p-4 rounded-lg min-h-[100px]">
                     <!-- Player names will be injected here -->
                 </div>
                 
                 <div id="host-controls" class="hidden mt-6">
-                    <button id="start-game-btn" class="btn btn-primary w-full">Start Question Submission</button>
+                    <button id="start-game-btn" class="btn btn-primary w-full" data-translate-key="startSubmissionBtn">Start Question Submission</button>
                 </div>
-                 <div id="player-wait-message" class="mt-6 text-gray-500">
+                 <div id="player-wait-message" class="mt-6 text-gray-500" data-translate-key="waitMessagePlayer">
                     The host will start the game soon.
                 </div>
             </div>
@@ -234,7 +250,7 @@
         <div id="question-submission-view" class="view flex-col items-center justify-center h-full">
             <div class="card">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 id="submission-view-title" class="text-2xl font-bold text-gray-800">Submit Your Questions</h2>
+                    <h2 id="submission-view-title" class="text-2xl font-bold text-gray-800" data-translate-key="submitQuestionsTitle">Submit Your Questions</h2>
                     <div class="text-lg font-bold bg-indigo-100 text-indigo-700 rounded-full px-4 py-2">
                         <span id="submission-timer">10:00</span>
                     </div>
@@ -245,42 +261,42 @@
                     
                     <!-- Player's View: The Form -->
                     <div id="player-submission-content">
-                        <p class="text-gray-600 mb-6">Create a question with four options. Make sure to mark the correct one!</p>
+                        <p class="text-gray-600 mb-6" data-translate-key="createQuestionDesc">Create a question with four options. Make sure to mark the correct one!</p>
                         <form id="question-form">
-                            <label class="font-semibold">Question:</label>
+                            <label class="font-semibold" data-translate-key="questionLabel">Question:</label>
                             <input type="text" id="question-text" class="input-field" required>
                             
-                            <label class="font-semibold">Options:</label>
+                            <label class="font-semibold" data-translate-key="optionsLabel">Options:</label>
                             <div class="grid grid-cols-2 gap-4 mb-4">
-                                <input type="text" id="option-a" placeholder="Option A" class="input-field m-0" required>
-                                <input type="text" id="option-b" placeholder="Option B" class="input-field m-0" required>
-                                <input type="text" id="option-c" placeholder="Option C" class="input-field m-0" required>
-                                <input type="text" id="option-d" placeholder="Option D" class="input-field m-0" required>
+                                <input type="text" id="option-a" placeholder="Option A" class="input-field m-0" required data-translate-key="optionAPlaceholder">
+                                <input type="text" id="option-b" placeholder="Option B" class="input-field m-0" required data-translate-key="optionBPlaceholder">
+                                <input type="text" id="option-c" placeholder="Option C" class="input-field m-0" required data-translate-key="optionCPlaceholder">
+                                <input type="text" id="option-d" placeholder="Option D" class="input-field m-0" required data-translate-key="optionDPlaceholder">
                             </div>
 
-                            <label class="font-semibold">Correct Answer:</label>
+                            <label class="font-semibold" data-translate-key="correctAnswerLabel">Correct Answer:</label>
                             <select id="correct-answer" class="input-field">
-                                <option value="A">Option A</option>
-                                <option value="B">Option B</option>
-                                <option value="C">Option C</option>
-                                <option value="D">Option D</option>
+                                <option value="A" data-translate-key="optionA">Option A</option>
+                                <option value="B" data-translate-key="optionB">Option B</option>
+                                <option value="C" data-translate-key="optionC">Option C</option>
+                                <option value="D" data-translate-key="optionD">Option D</option>
                             </select>
 
-                            <button type="submit" class="btn btn-primary w-full mt-2">Submit Question</button>
+                            <button type="submit" class="btn btn-primary w-full mt-2" data-translate-key="submitQuestionBtn">Submit Question</button>
                         </form>
                         <div class="mt-4 text-center">
-                            <p class="text-gray-700">You have submitted <span id="questions-submitted-count" class="font-bold">0</span> questions.</p>
+                            <p class="text-gray-700" data-translate-key="youHaveSubmitted">You have submitted <span id="questions-submitted-count" class="font-bold">0</span> questions.</p>
                         </div>
                     </div>
 
                     <!-- Host's View: The Question List -->
                     <div id="host-submission-content" class="hidden">
-                        <p class="text-gray-600 mb-6 text-center">Players are submitting questions. You can review them in real-time below.</p>
+                        <p class="text-gray-600 mb-6 text-center" data-translate-key="hostSubmissionDesc">Players are submitting questions. You can review them in real-time below.</p>
                         <div class="text-center mb-4">
-                            <p class="text-lg">Total Questions Submitted:</p>
+                            <p class="text-lg" data-translate-key="totalQuestionsSubmittedLabel">Total Questions Submitted:</p>
                             <span id="total-questions-submitted" class="font-bold text-3xl text-indigo-600">0</span>
                         </div>
-                        <h3 class="font-bold text-lg text-gray-800 border-t pt-4">Submitted Questions:</h3>
+                        <h3 class="font-bold text-lg text-gray-800 border-t pt-4" data-translate-key="submittedQuestionsLabel">Submitted Questions:</h3>
                         <div id="submitted-questions-list" class="mt-2 space-y-3 max-h-80 overflow-y-auto p-3 bg-gray-50 rounded-lg border">
                             <!-- Questions will be dynamically inserted here -->
                         </div>
@@ -295,9 +311,9 @@
             <div class="card w-full max-w-2xl text-center">
                  <div id="question-container">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-gray-500">Question <span id="current-question-number">1</span>/<span id="total-questions-number">10</span></h2>
+                        <h2 class="text-xl font-bold text-gray-500"><span data-translate-key="questionWord">Question</span> <span id="current-question-number">1</span>/<span id="total-questions-number">10</span></h2>
                         <div class="text-lg font-bold bg-indigo-100 text-indigo-700 rounded-full px-4 py-2">
-                           Time Left: <span id="game-timer">15:00</span>
+                           <span data-translate-key="timeLeftLabel">Time Left:</span> <span id="game-timer">15:00</span>
                         </div>
                     </div>
                     <p id="game-question-text" class="text-2xl font-semibold text-gray-800 mb-8 min-h-[60px]"></p>
@@ -307,12 +323,12 @@
                     <div id="feedback-message" class="mt-6 text-xl font-bold"></div>
                 </div>
                  <div id="waiting-for-questions" class="text-center p-8 hidden">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Get Ready!</h2>
-                    <p class="text-gray-600">The quiz is about to begin. No questions were submitted by other players for you yet. Waiting...</p>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="getReadyTitle">Get Ready!</h2>
+                    <p class="text-gray-600" data-translate-key="waitingForQuestions">The quiz is about to begin. No questions were submitted by other players for you yet. Waiting...</p>
                 </div>
                 <div id="player-finished-container" class="text-center p-8 hidden">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">You're Done! 🎉</h2>
-                    <p class="text-gray-600">Great job! You've answered all available questions. Please wait for the host to end the game for everyone.</p>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="youAreDoneTitle">You're Done! 🎉</h2>
+                    <p class="text-gray-600" data-translate-key="youAreDoneDesc">Great job! You've answered all available questions. Please wait for the host to end the game for everyone.</p>
                 </div>
             </div>
         </div>
@@ -321,23 +337,23 @@
         <div id="host-gameplay-view" class="view flex-col items-center justify-center h-full">
             <div class="card w-full max-w-lg text-center">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Game in Progress</h2>
+                    <h2 class="text-2xl font-bold text-gray-800" data-translate-key="gameInProgressTitle">Game in Progress</h2>
                     <div class="text-lg font-bold bg-indigo-100 text-indigo-700 rounded-full px-4 py-2">
-                       Time Left: <span id="host-game-timer">15:00</span>
+                       <span data-translate-key="timeLeftLabel">Time Left:</span> <span id="host-game-timer">15:00</span>
                     </div>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-700 mb-4">Live Leaderboard</h3>
+                <h3 class="text-xl font-semibold text-gray-700 mb-4" data-translate-key="liveLeaderboardLabel">Live Leaderboard</h3>
                 <div id="live-leaderboard-list" class="space-y-2 text-left bg-gray-50 p-4 rounded-lg min-h-[200px]">
                     <!-- Live scores will be injected here -->
                 </div>
-                <button id="end-game-now-btn" class="btn btn-secondary w-full mt-8">End Game For All Players</button>
+                <button id="end-game-now-btn" class="btn btn-secondary w-full mt-8" data-translate-key="endGameNowBtn">End Game For All Players</button>
             </div>
         </div>
 
         <!-- Scoreboard View -->
         <div id="scoreboard-view" class="view flex-col items-center justify-center h-full">
             <div class="card text-center w-full max-w-lg">
-                <h2 class="text-3xl font-bold text-gray-800 mb-8">Final Scores</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-8" data-translate-key="finalScoresTitle">Final Scores</h2>
                 
                 <div id="podium-container" class="flex items-end justify-center gap-2 md:gap-4 h-64 mb-8">
                     <!-- 2nd Place -->
@@ -352,7 +368,7 @@
                     <!-- Scores for 4th+ will be injected here -->
                 </div>
 
-                <button id="play-again-btn" class="btn btn-primary w-full mt-8 hidden">End Game & Return to Menu</button>
+                <button id="play-again-btn" class="btn btn-primary w-full mt-8 hidden" data-translate-key="endAndReturnBtn">End Game & Return to Menu</button>
             </div>
         </div>
 
@@ -374,6 +390,198 @@
         let currentQuestionIndex = 0;
         let gameplayTimer = null;
         let isPlayerFinished = false; // Player-specific state to prevent quiz reset
+        let currentLang = 'en';
+
+        // --- Translations ---
+        const translations = {
+            'en': {
+                appTitle: 'Quiz Royale',
+                appDescription: 'Create a game for your book club or join an existing one.',
+                hostGameBtn: 'Host New Game',
+                joinGameBtn: 'Join Game',
+                howToPlayBtn: 'How to Play',
+                yourUserIdLabel: 'Your User ID (for reference):',
+                howToPlayTitle: 'How to Play',
+                phase1Title: 'Phase 1: Question Submission',
+                phase1Desc: 'The host sets a timer. All players must create and submit quiz questions based on the book. You cannot answer your own questions later, so be creative!',
+                phase2Title: 'Phase 2: The Quiz',
+                phase2Desc: 'Once the submission time is up, the quiz begins! You will be shown questions written by other players, one by one. Answer as many as you can before the main game timer runs out.',
+                scoringTitle: 'Scoring System',
+                scoringPoint1: '<span class="font-semibold text-green-600">+10 Points</span> for each question you submit.',
+                scoringPoint2: '<span class="font-semibold text-green-600">+10 Points</span> for each question you answer correctly.',
+                scoringPoint3: 'There is no penalty for wrong answers.',
+                goodLuck: 'The player with the highest total score wins. Good luck!',
+                gotItBtn: 'Got it!',
+                gameSetupTitle: 'Game Setup',
+                yourNameLabel: 'Your Name',
+                yourNamePlaceholder: 'Enter your name...',
+                submissionTimeLabel: 'Question Submission Time (minutes)',
+                playTimeLabel: 'Total Play Time (minutes)',
+                createGameBtn: 'Create Game & Start Lobby',
+                backBtn: 'Back',
+                joinGameTitle: 'Join a Game',
+                gameIdLabel: 'Enter Game ID',
+                gameIdPlaceholder: 'e.g. AB12C',
+                joinBtn: 'Join',
+                lobbyTitle: 'Game Lobby',
+                inviteMessage: 'Share the link or scan the QR code to invite players!',
+                copyLinkBtn: 'Copy Link',
+                hostLabel: 'Host:',
+                playersJoinedLabel: 'Players Joined:',
+                startSubmissionBtn: 'Start Question Submission',
+                waitMessagePlayer: 'The host will start the game soon.',
+                waitMessageHost: 'You are the host. Start the game when everyone is ready.',
+                youAreInTitle: "You're In!",
+                waitMessagePlayerJoined: 'The host will start the game soon. You can see new players join in real-time.',
+                submitQuestionsTitle: 'Submit Your Questions',
+                createQuestionDesc: 'Create a question with four options. Make sure to mark the correct one!',
+                questionLabel: 'Question:',
+                optionsLabel: 'Options:',
+                optionAPlaceholder: 'Option A',
+                optionBPlaceholder: 'Option B',
+                optionCPlaceholder: 'Option C',
+                optionDPlaceholder: 'Option D',
+                correctAnswerLabel: 'Correct Answer:',
+                optionA: 'Option A',
+                optionB: 'Option B',
+                optionC: 'Option C',
+                optionD: 'Option D',
+                submitQuestionBtn: 'Submit Question',
+                youHaveSubmitted: 'You have submitted <span id="questions-submitted-count" class="font-bold">0</span> questions.',
+                hostSubmissionDesc: 'Players are submitting questions. You can review them in real-time below.',
+                totalQuestionsSubmittedLabel: 'Total Questions Submitted:',
+                submittedQuestionsLabel: 'Submitted Questions:',
+                noPlayersJoined: 'No players have joined yet.',
+                noQuestionsSubmitted: 'No questions have been submitted yet.',
+                submittedBy: 'Submitted by',
+                questionWord: 'Question',
+                timeLeftLabel: 'Time Left:',
+                getReadyTitle: 'Get Ready!',
+                waitingForQuestions: 'The quiz is about to begin. No questions were submitted by other players for you yet. Waiting...',
+                youAreDoneTitle: "You're Done! 🎉",
+                youAreDoneDesc: "Great job! You've answered all available questions. Please wait for the host to end the game for everyone.",
+                gameInProgressTitle: 'Game in Progress',
+                liveLeaderboardLabel: 'Live Leaderboard',
+                endGameNowBtn: 'End Game For All Players',
+                finalScoresTitle: 'Final Scores',
+                leaderboard: 'Leaderboard',
+                endAndReturnBtn: 'End Game & Return to Menu',
+                alertEnterName: 'Please enter your name!',
+                alertEnterNameAndId: 'Please enter your name and a Game ID.',
+                alertGameNotFound: 'Game ID not found.',
+                alertLinkCopied: 'Game join link copied to clipboard!',
+                feedbackCorrect: 'Correct!',
+                feedbackIncorrect: 'Wrong answer.',
+                scoreLabel: 'Score',
+                waitingForScores: 'Waiting for players to score...'
+            },
+            'zh-TW': {
+                appTitle: '問答追追追',
+                appDescription: '為您的讀書會創建一個新遊戲或加入現有的遊戲。',
+                hostGameBtn: '主持新遊戲',
+                joinGameBtn: '加入遊戲',
+                howToPlayBtn: '遊戲玩法',
+                yourUserIdLabel: '您的玩家ID (參考用):',
+                howToPlayTitle: '遊戲玩法',
+                phase1Title: '階段一：提交問題',
+                phase1Desc: '主持人設定計時器。所有玩家必須根據書本內容創建並提交問題。您稍後無法回答自己的問題，所以請發揮創意！',
+                phase2Title: '階段二：問答環節',
+                phase2Desc: '提交時間結束後，問答環節開始！您將會看到由其他玩家撰寫的問題，一次一題。在遊戲總時間結束前，盡可能回答最多的問題。',
+                scoringTitle: '計分系統',
+                scoringPoint1: '每提交一個問題可獲得<span class="font-semibold text-green-600">+10分</span>。',
+                scoringPoint2: '每答對一個問題可獲得<span class="font-semibold text-green-600">+10分</span>。',
+                scoringPoint3: '答錯不扣分。',
+                goodLuck: '總分最高的玩家獲勝。祝您好運！',
+                gotItBtn: '了解！',
+                gameSetupTitle: '遊戲設定',
+                yourNameLabel: '您的名字',
+                yourNamePlaceholder: '請輸入您的名字...',
+                submissionTimeLabel: '問題提交時間 (分鐘)',
+                playTimeLabel: '總遊戲時間 (分鐘)',
+                createGameBtn: '創建遊戲並開始大廳',
+                backBtn: '返回',
+                joinGameTitle: '加入遊戲',
+                gameIdLabel: '輸入遊戲ID',
+                gameIdPlaceholder: '例如 AB12C',
+                joinBtn: '加入',
+                lobbyTitle: '遊戲大廳',
+                inviteMessage: '分享連結或掃描QR碼邀請玩家！',
+                copyLinkBtn: '複製連結',
+                hostLabel: '主持人:',
+                playersJoinedLabel: '已加入的玩家:',
+                startSubmissionBtn: '開始問題提交階段',
+                waitMessagePlayer: '主持人即將開始遊戲。',
+                waitMessageHost: '您是主持人。等所有人都準備好後，即可開始遊戲。',
+                youAreInTitle: "您已加入！",
+                waitMessagePlayerJoined: '主持人即將開始遊戲。您可以即時看到新玩家加入。',
+                submitQuestionsTitle: '提交您的問題',
+                createQuestionDesc: '創建一個問題並附上四個選項。請務必標示正確答案！',
+                questionLabel: '問題:',
+                optionsLabel: '選項:',
+                optionAPlaceholder: '選項A',
+                optionBPlaceholder: '選項B',
+                optionCPlaceholder: '選項C',
+                optionDPlaceholder: '選項D',
+                correctAnswerLabel: '正確答案:',
+                optionA: '選項 A',
+                optionB: '選項 B',
+                optionC: '選項 C',
+                optionD: '選項 D',
+                submitQuestionBtn: '提交問題',
+                youHaveSubmitted: '您已提交 <span id="questions-submitted-count" class="font-bold">0</span> 個問題。',
+                hostSubmissionDesc: '玩家正在提交問題。您可以在下方即時查看。',
+                totalQuestionsSubmittedLabel: '總提交問題數:',
+                submittedQuestionsLabel: '已提交的問題:',
+                noPlayersJoined: '尚無玩家加入。',
+                noQuestionsSubmitted: '尚未有任何問題被提交。',
+                submittedBy: '提交者',
+                questionWord: '問題',
+                timeLeftLabel: '剩餘時間:',
+                getReadyTitle: '準備開始！',
+                waitingForQuestions: '問答即將開始。目前尚無其他玩家為您提交問題。等待中...',
+                youAreDoneTitle: '您已完成！🎉',
+                youAreDoneDesc: '做得好！您已回答完所有可用的問題。請等待主持人為所有玩家結束遊戲。',
+                gameInProgressTitle: '遊戲進行中',
+                liveLeaderboardLabel: '即時排行榜',
+                endGameNowBtn: '為所有玩家結束遊戲',
+                finalScoresTitle: '最終分數',
+                leaderboard: '排行榜',
+                endAndReturnBtn: '結束遊戲並返回主選單',
+                alertEnterName: '請輸入您的名字！',
+                alertEnterNameAndId: '請輸入您的名字和遊戲ID。',
+                alertGameNotFound: '找不到遊戲ID。',
+                alertLinkCopied: '已將遊戲加入連結複製到剪貼簿！',
+                feedbackCorrect: '答對了！',
+                feedbackIncorrect: '答錯了。',
+                scoreLabel: '分數',
+                waitingForScores: '等待玩家得分...'
+            }
+        };
+
+        function getTranslation(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('bookClubQuizLang', lang);
+
+            // Set active button
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+            document.getElementById('lang-zh').classList.toggle('active', lang === 'zh-TW');
+
+            document.querySelectorAll('[data-translate-key]').forEach(el => {
+                const key = el.getAttribute('data-translate-key');
+                const translation = getTranslation(key);
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = translation;
+                } else {
+                    // Using innerHTML to support span tags in translations
+                    el.innerHTML = translation;
+                }
+            });
+        }
+
 
         // --- Firebase Config ---
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -459,6 +667,12 @@
                 console.error("Firebase initialization failed:", error);
                 // A user-friendly error display could be added here
             }
+
+            // Language setup
+            document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
+            document.getElementById('lang-zh').addEventListener('click', () => setLanguage('zh-TW'));
+            const savedLang = localStorage.getItem('bookClubQuizLang') || 'en';
+            setLanguage(savedLang);
         }
 
         // 2. Game State Management (listening to Firestore)
@@ -488,14 +702,14 @@
             playerList.innerHTML = '';
             const playerCount = Object.keys(gameData.players).length;
             if (playerCount === 0) {
-                 playerList.innerHTML = '<p class="text-gray-500 text-center">No players have joined yet.</p>';
+                 playerList.innerHTML = `<p class="text-gray-500 text-center">${getTranslation('noPlayersJoined')}</p>`;
             } else {
                 const sortedPlayers = Object.values(gameData.players).sort((a,b) => b.score - a.score);
                 sortedPlayers.forEach(player => {
                     const playerEl = document.createElement('div');
                     playerEl.className = 'flex items-center space-x-2';
                     const playerName = player.name || `Player ${player.id.substring(0,6)}`;
-                    playerEl.innerHTML = `<span class="font-semibold text-gray-800">👤 ${playerName}</span> <span class="text-sm text-gray-500">(Score: ${player.score})</span>`;
+                    playerEl.innerHTML = `<span class="font-semibold text-gray-800">👤 ${playerName}</span> <span class="text-sm text-gray-500">(${getTranslation('scoreLabel')}: ${player.score})</span>`;
                     playerList.appendChild(playerEl);
                 });
             }
@@ -508,17 +722,17 @@
 
             if (userId === gameData.hostId) {
                 hostControls.classList.remove('hidden');
-                playerWaitMessage.textContent = 'You are the host. Start the game when everyone is ready.';
+                playerWaitMessage.textContent = getTranslation('waitMessageHost');
                 
                 inviteContainer.classList.remove('hidden');
-                lobbyTitle.textContent = 'Game Lobby';
+                lobbyTitle.textContent = getTranslation('lobbyTitle');
 
             } else {
                 hostControls.classList.add('hidden');
-                playerWaitMessage.textContent = 'The host will start the game soon. You can see new players join in real-time.';
+                playerWaitMessage.textContent = getTranslation('waitMessagePlayerJoined');
                 
                 inviteContainer.classList.add('hidden');
-                lobbyTitle.textContent = "You're In!";
+                lobbyTitle.textContent = getTranslation('youAreInTitle');
             }
 
 
@@ -552,7 +766,7 @@
                     const hostContent = document.getElementById('host-submission-content');
 
                     if (userId === gameData.hostId) {
-                        subViewTitle.textContent = 'Question Submission';
+                        subViewTitle.textContent = getTranslation('submitQuestionsTitle');
                         playerContent.classList.add('hidden');
                         hostContent.classList.remove('hidden');
 
@@ -562,7 +776,7 @@
                         submittedQuestionsList.innerHTML = ''; // Clear the list
 
                         if (gameData.questions.length === 0) {
-                            submittedQuestionsList.innerHTML = '<p class="text-gray-500 text-center italic py-4">No questions have been submitted yet.</p>';
+                            submittedQuestionsList.innerHTML = `<p class="text-gray-500 text-center italic py-4">${getTranslation('noQuestionsSubmitted')}</p>`;
                         } else {
                             // Reverse to show newest first
                             [...gameData.questions].reverse().forEach(q => { 
@@ -582,7 +796,7 @@
 
                                 questionEl.innerHTML = `
                                     <p class="font-semibold text-gray-800">${q.text}</p>
-                                    <p class="text-xs text-gray-500 font-medium">Submitted by: <span class="font-bold">${authorName}</span></p>
+                                    <p class="text-xs text-gray-500 font-medium">${getTranslation('submittedBy')}: <span class="font-bold">${authorName}</span></p>
                                     ${optionsHTML}
                                 `;
                                 submittedQuestionsList.appendChild(questionEl);
@@ -590,7 +804,7 @@
                         }
 
                     } else { // It's a player
-                        subViewTitle.textContent = 'Submit Your Questions';
+                        subViewTitle.textContent = getTranslation('submitQuestionsTitle');
                         playerContent.classList.remove('hidden');
                         hostContent.classList.add('hidden');
                         
@@ -637,7 +851,7 @@
             const sortedPlayers = Object.values(players).sort((a, b) => b.score - a.score);
 
             if (sortedPlayers.length === 0) {
-                leaderboardList.innerHTML = '<p class="text-gray-500 text-center">Waiting for players to score...</p>';
+                leaderboardList.innerHTML = `<p class="text-gray-500 text-center">${getTranslation('waitingForScores')}</p>`;
                 return;
             }
 
@@ -677,7 +891,7 @@
         document.getElementById('create-game-btn').addEventListener('click', async () => {
             const playerName = document.getElementById('host-name-input').value.trim();
             if (!playerName) {
-                alert("Please enter your name!");
+                alert(getTranslation('alertEnterName'));
                 return;
             }
 
@@ -737,7 +951,7 @@
                 const cleanUrl = window.location.href.split('?')[0];
                 window.history.replaceState({}, document.title, cleanUrl);
             } else {
-                alert("Game ID not found.");
+                alert(getTranslation('alertGameNotFound'));
                 const cleanUrl = window.location.href.split('?')[0];
                 window.history.replaceState({}, document.title, cleanUrl);
             }
@@ -748,7 +962,7 @@
             const playerName = document.getElementById('join-player-name-input').value.trim();
 
             if (!gameId || !playerName) {
-                alert("Please enter your name and a Game ID.");
+                alert(getTranslation('alertEnterNameAndId'));
                 return;
             }
             await joinGameWithId(gameId, playerName);
@@ -765,7 +979,7 @@
             document.execCommand('copy');
             document.body.removeChild(tempInput);
             
-            alert('Game join link copied to clipboard!');
+            alert(getTranslation('alertLinkCopied'));
         });
 
 
@@ -950,7 +1164,7 @@
             });
             
             if (selectedOption === correctOption) {
-                document.getElementById('feedback-message').textContent = 'Correct!';
+                document.getElementById('feedback-message').textContent = getTranslation('feedbackCorrect');
                 document.getElementById('feedback-message').className = 'mt-6 text-xl font-bold text-green-600';
                 
                 const gameRef = doc(db, `artifacts/${appId}/public/data/bookClubGames`, currentGameId);
@@ -963,7 +1177,7 @@
                 }
                 
             } else if (selectedOption) {
-                document.getElementById('feedback-message').textContent = 'Wrong answer.';
+                document.getElementById('feedback-message').textContent = getTranslation('feedbackIncorrect');
                  document.getElementById('feedback-message').className = 'mt-6 text-xl font-bold text-red-600';
             }
 
@@ -1011,7 +1225,7 @@
             if (sortedPlayers.length > 3) {
                 const runnersUpTitle = document.createElement('h3');
                 runnersUpTitle.className = 'text-lg font-bold text-gray-700 mt-4 border-t pt-4';
-                runnersUpTitle.textContent = 'Leaderboard';
+                runnersUpTitle.textContent = getTranslation('leaderboard');
                 runnersUpList.appendChild(runnersUpTitle);
 
                 sortedPlayers.slice(3).forEach((player, index) => {
